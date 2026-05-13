@@ -1,56 +1,10 @@
+import java.util.ArrayList;
 import java.util.Scanner;
 
-public class AddressBookSystem {
-    public static void main(String[] args) {
-        System.out.println("Welcome to Address Book Program");
-        
-        Scanner scanner = new Scanner(System.in);
-
-        System.out.println("Enter First Name:");
-        String firstName = scanner.nextLine();
-
-        System.out.println("Enter Last Name:");
-        String lastName = scanner.nextLine();
-
-        System.out.println("Enter Address:");
-        String address = scanner.nextLine();
-
-        System.out.println("Enter City:");
-        String city = scanner.nextLine();
-
-        System.out.println("Enter State:");
-        String state = scanner.nextLine();
-
-        System.out.println("Enter Zip:");
-        String zip = scanner.nextLine();
-
-        System.out.println("Enter Phone Number:");
-        String phoneNumber = scanner.nextLine();
-
-        System.out.println("Enter Email:");
-        String email = scanner.nextLine();
-
-        Contact person = new Contact(firstName, lastName, address, city, state, zip, phoneNumber, email);
-
-        System.out.println("\n--- Contact Added Successfully ---");
-        System.out.println(person);
-
-        scanner.close();
-    }
-}
-
 class Contact {
-    private String firstName;
-    private String lastName;
-    private String address;
-    private String city;
-    private String state;
-    private String zip;
-    private String phoneNumber;
-    private String email;
+    private String firstName, lastName, address, city, state, zip, phoneNumber, email;
 
-    public Contact(String firstName, String lastName, String address, String city, 
-                   String state, String zip, String phoneNumber, String email) {
+    public Contact(String firstName, String lastName, String address, String city, String state, String zip, String phoneNumber, String email) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.address = address;
@@ -63,10 +17,45 @@ class Contact {
 
     @Override
     public String toString() {
-        return "Contact Details:" + 
-               "\nName: " + firstName + " " + lastName + 
-               "\nAddress: " + address + ", " + city + ", " + state + " - " + zip + 
-               "\nPhone: " + phoneNumber + 
-               "\nEmail: " + email + "\n";
+        return "Name: " + firstName + " " + lastName + " | Phone: " + phoneNumber + " | Email: " + email;
+    }
+}
+
+class AddressBook {
+    private ArrayList<Contact> contactList = new ArrayList<>();
+
+    public void addContact(Contact contact) {
+        contactList.add(contact);
+    }
+
+    public void displayBook() {
+        System.out.println("\n--- Current Address Book ---");
+        for (Contact c : contactList) {
+            System.out.println(c);
+        }
+    }
+}
+
+public class AddressBookSystem {
+    public static void main(String[] args) {
+        System.out.println("Welcome to Address Book Program");
+        AddressBook addressBook = new AddressBook();
+        Scanner sc = new Scanner(System.in);
+
+        System.out.println("Enter details for a new contact:");
+        System.out.print("First Name: "); String fName = sc.nextLine();
+        System.out.print("Last Name: "); String lName = sc.nextLine();
+        System.out.print("Address: "); String addr = sc.nextLine();
+        System.out.print("City: "); String city = sc.nextLine();
+        System.out.print("State: "); String state = sc.nextLine();
+        System.out.print("Zip: "); String zip = sc.nextLine();
+        System.out.print("Phone: "); String phone = sc.nextLine();
+        System.out.print("Email: "); String email = sc.nextLine();
+
+        Contact newPerson = new Contact(fName, lName, addr, city, state, zip, phone, email);
+        addressBook.addContact(newPerson);
+
+        addressBook.displayBook();
+        sc.close();
     }
 }
