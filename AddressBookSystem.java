@@ -92,6 +92,11 @@ class AddressBook {
         if (!found) System.out.println("Contact not found.");
     }
 
+    public void deleteContact(String name) {
+        boolean removed = contactList.removeIf(contact -> contact.getFirstName().equalsIgnoreCase(name));
+        System.out.println("Contact" + (removed ? " deleted successfully!" : " not found."));
+    }
+
     public void displayBook() {
         if (contactList.isEmpty()) System.out.println("Address Book is empty.");
         else contactList.forEach(System.out::println);
