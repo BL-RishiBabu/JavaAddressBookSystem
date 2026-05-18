@@ -49,6 +49,8 @@ class Contact {
 
 class AddressBook {
     private ArrayList<Contact> contactList = new ArrayList<>();
+    private Map<String, List<Contact>> cityPersonMap = new HashMap<>();
+    private Map<String, List<Contact>> statePersonMap = new HashMap<>();
     private Scanner sc = new Scanner(System.in);
 
     public void addContact() {
@@ -70,6 +72,8 @@ class AddressBook {
         }
 
         contactList.add(newContact);
+        addToCityDictionary(city, newContact);
+        addToStateDictionary(state, newContact);
         System.out.println("Contact added successfully!");
     }
 
@@ -77,7 +81,15 @@ class AddressBook {
         for (Contact contact : contactList) {
             if (contact.getFirstName().equalsIgnoreCase(name)) {
                 System.out.println("Updating " + contact.getFirstName() + ". Enter new City:");
-                contact.setCity(sc.nextLine());
+                String oldCity = contact.getCity();
+                String newCity = sc.nextLine();
+                if (!newCity.equalsIgnoreCase(oldCity)) {
+                    removeFromCityDictionary(oldCity, contact);
+                    contact.setCity(newCity);
+                    addToCityDictionary(newCity, contact);
+                } else {
+                    contact.setCity(newCity);
+                }
                 return;
             }
         }
@@ -85,15 +97,39 @@ class AddressBook {
     }
 
     public List<Contact> searchByCity(String city) {
-        return contactList.stream()
-                .filter(contact -> contact.getCity().equalsIgnoreCase(city))
-                .collect(Collectors.toList());
+        return cityPersonMap.getOrDefault(city.toLowerCase(), Collections.emptyList());
     }
 
     public List<Contact> searchByState(String state) {
-        return contactList.stream()
-                .filter(contact -> contact.getState().equalsIgnoreCase(state))
-                .collect(Collectors.toList());
+        return statePersonMap.getOrDefault(state.toLowerCase(), Collections.emptyList());
+    }
+
+    private void addToCityDictionary(String city, Contact contact) {
+        cityPersonMap.computeIfAbsent(city.toLowerCase(), key -> new ArrayList<>()).add(contact);
+    }
+
+    private void addToStateDictionary(String state, Contact contact) {
+        statePersonMap.computeIfAbsent(state.toLowerCase(), key -> new ArrayList<>()).add(contact);
+    }
+
+    private void removeFromCityDictionary(String city, Contact contact) {
+        List<Contact> contacts = cityPersonMap.get(city.toLowerCase());
+        if (contacts != null) {
+            contacts.remove(contact);
+            if (contacts.isEmpty()) {
+                cityPersonMap.remove(city.toLowerCase());
+            }
+        }
+    }
+
+    private void removeFromStateDictionary(String state, Contact contact) {
+        List<Contact> contacts = statePersonMap.get(state.toLowerCase());
+        if (contacts != null) {
+            contacts.remove(contact);
+            if (contacts.isEmpty()) {
+                statePersonMap.remove(state.toLowerCase());
+            }
+        }
     }
 
     public void displayBook() {
