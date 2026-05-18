@@ -16,12 +16,27 @@ class Contact {
     }
 
     public String getFirstName() { return firstName; }
+    public String getLastName() { return lastName; }
     public void setAddress(String address) { this.address = address; }
     public void setCity(String city) { this.city = city; }
     public void setState(String state) { this.state = state; }
     public void setZip(String zip) { this.zip = zip; }
     public void setPhoneNumber(String phoneNumber) { this.phoneNumber = phoneNumber; }
     public void setEmail(String email) { this.email = email; }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        Contact other = (Contact) obj;
+        return firstName.equalsIgnoreCase(other.firstName)
+                && lastName.equalsIgnoreCase(other.lastName);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(firstName.toLowerCase(), lastName.toLowerCase());
+    }
 
     @Override
     public String toString() {
@@ -44,7 +59,14 @@ class AddressBook {
         System.out.print("Phone: "); String phone = sc.nextLine();
         System.out.print("Email: "); String email = sc.nextLine();
 
-        contactList.add(new Contact(fName, lName, addr, city, state, zip, phone, email));
+        Contact newContact = new Contact(fName, lName, addr, city, state, zip, phone, email);
+        boolean duplicate = contactList.stream().anyMatch(contact -> contact.equals(newContact));
+        if (duplicate) {
+            System.out.println("Duplicate contact found. Contact not added.");
+            return;
+        }
+
+        contactList.add(newContact);
         System.out.println("Contact added successfully!");
     }
 
