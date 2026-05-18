@@ -136,6 +136,18 @@ class AddressBook {
         if (contactList.isEmpty()) System.out.println("Address Book is empty.");
         else contactList.forEach(System.out::println);
     }
+
+    public void sortContactsByName() {
+        if (contactList.isEmpty()) {
+            System.out.println("Address Book is empty.");
+            return;
+        }
+        System.out.println("Contacts sorted by name:");
+        contactList.stream()
+                .sorted(Comparator.comparing(Contact::getFirstName, String.CASE_INSENSITIVE_ORDER)
+                        .thenComparing(Contact::getLastName, String.CASE_INSENSITIVE_ORDER))
+                .forEach(System.out::println);
+    }
 }
 
 public class AddressBookSystem {
@@ -250,16 +262,17 @@ public class AddressBookSystem {
     private static void accessBookMenu(AddressBook book) {
         boolean back = false;
         while (!back) {
-            System.out.println("\n1. Add Contact\n2. Edit Contact\n3. Display Contacts\n4. Back to Main Menu");
+            System.out.println("\n1. Add Contact\n2. Edit Contact\n3. Display Contacts\n4. Sort Contacts by Name\n5. Back to Main Menu");
             int choice = sc.nextInt(); sc.nextLine();
             switch (choice) {
                 case 1: book.addContact(); break;
-                case 2: 
+                case 2:
                     System.out.print("Enter First Name to edit: ");
-                    book.editContact(sc.nextLine()); 
+                    book.editContact(sc.nextLine());
                     break;
                 case 3: book.displayBook(); break;
-                case 4: back = true; break;
+                case 4: book.sortContactsByName(); break;
+                case 5: back = true; break;
             }
         }
     }
