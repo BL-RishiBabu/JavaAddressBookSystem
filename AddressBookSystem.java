@@ -1,4 +1,5 @@
 import java.util.*;
+import java.util.stream.*;
 
 class Contact {
     private String firstName, lastName, address, city, state, zip, phoneNumber, email;
@@ -17,6 +18,8 @@ class Contact {
 
     public String getFirstName() { return firstName; }
     public String getLastName() { return lastName; }
+    public String getCity() { return city; }
+    public String getState() { return state; }
     public void setAddress(String address) { this.address = address; }
     public void setCity(String city) { this.city = city; }
     public void setState(String state) { this.state = state; }
@@ -81,6 +84,18 @@ class AddressBook {
         System.out.println("Contact not found.");
     }
 
+    public List<Contact> searchByCity(String city) {
+        return contactList.stream()
+                .filter(contact -> contact.getCity().equalsIgnoreCase(city))
+                .collect(Collectors.toList());
+    }
+
+    public List<Contact> searchByState(String state) {
+        return contactList.stream()
+                .filter(contact -> contact.getState().equalsIgnoreCase(state))
+                .collect(Collectors.toList());
+    }
+
     public void displayBook() {
         if (contactList.isEmpty()) System.out.println("Address Book is empty.");
         else contactList.forEach(System.out::println);
@@ -100,7 +115,8 @@ public class AddressBookSystem {
             System.out.println("1. Create New Address Book");
             System.out.println("2. Access Existing Address Book");
             System.out.println("3. Display All Address Books");
-            System.out.println("4. Exit");
+            System.out.println("4. Search Persons by City or State");
+            System.out.println("5. Exit");
             int choice = sc.nextInt(); sc.nextLine();
 
             switch (choice) {
@@ -129,9 +145,42 @@ public class AddressBookSystem {
                     else addressBookMap.keySet().forEach(key -> System.out.println("- " + key));
                     break;
                 case 4:
+                    searchPersonAcrossBooks();
+                    break;
+                case 5:
                     exit = true;
                     break;
             }
+        }
+    }
+
+    private static void searchPersonAcrossBooks() {
+        System.out.println("\nSearch by:");
+        System.out.println("1. City");
+        System.out.println("2. State");
+        int choice = sc.nextInt(); sc.nextLine();
+        System.out.print("Enter search value: ");
+        String searchValue = sc.nextLine();
+
+        List<String> foundContacts = addressBookMap.entrySet().stream()
+                .flatMap(entry -> {
+                    AddressBook book = entry.getValue();
+                    if (choice == 1) {
+                        return book.searchByCity(searchValue).stream()
+                                .map(contact -> "[" + entry.getKey() + "] " + contact);
+                    } else if (choice == 2) {
+                        return book.searchByState(searchValue).stream()
+                                .map(contact -> "[" + entry.getKey() + "] " + contact);
+                    }
+                    return Stream.<String>empty();
+                })
+                .collect(Collectors.toList());
+
+        if (foundContacts.isEmpty()) {
+            System.out.println("No contacts found for '" + searchValue + "'.");
+        } else {
+            System.out.println("Found contacts:");
+            foundContacts.forEach(System.out::println);
         }
     }
 
