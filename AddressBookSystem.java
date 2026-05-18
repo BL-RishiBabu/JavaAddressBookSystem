@@ -152,7 +152,8 @@ public class AddressBookSystem {
             System.out.println("2. Access Existing Address Book");
             System.out.println("3. Display All Address Books");
             System.out.println("4. Search Persons by City or State");
-            System.out.println("5. Exit");
+            System.out.println("5. Count Persons by City or State");
+            System.out.println("6. Exit");
             int choice = sc.nextInt(); sc.nextLine();
 
             switch (choice) {
@@ -184,6 +185,9 @@ public class AddressBookSystem {
                     searchPersonAcrossBooks();
                     break;
                 case 5:
+                    countPersonsAcrossBooks();
+                    break;
+                case 6:
                     exit = true;
                     break;
             }
@@ -218,6 +222,29 @@ public class AddressBookSystem {
             System.out.println("Found contacts:");
             foundContacts.forEach(System.out::println);
         }
+    }
+
+    private static void countPersonsAcrossBooks() {
+        System.out.println("\nCount by:");
+        System.out.println("1. City");
+        System.out.println("2. State");
+        int choice = sc.nextInt(); sc.nextLine();
+        System.out.print("Enter value: ");
+        String value = sc.nextLine();
+
+        long totalCount = addressBookMap.values().stream()
+                .flatMap(book -> {
+                    if (choice == 1) {
+                        return book.searchByCity(value).stream();
+                    } else if (choice == 2) {
+                        return book.searchByState(value).stream();
+                    }
+                    return Stream.<Contact>empty();
+                })
+                .count();
+
+        String category = choice == 1 ? "city" : "state";
+        System.out.println("Total contacts in " + category + " '" + value + "': " + totalCount);
     }
 
     private static void accessBookMenu(AddressBook book) {
