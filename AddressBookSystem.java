@@ -20,6 +20,7 @@ class Contact {
     public String getLastName() { return lastName; }
     public String getCity() { return city; }
     public String getState() { return state; }
+    public String getZip() { return zip; }
     public void setAddress(String address) { this.address = address; }
     public void setCity(String city) { this.city = city; }
     public void setState(String state) { this.state = state; }
@@ -148,6 +149,45 @@ class AddressBook {
                         .thenComparing(Contact::getLastName, String.CASE_INSENSITIVE_ORDER))
                 .forEach(System.out::println);
     }
+
+    public void sortContactsByCity() {
+        if (contactList.isEmpty()) {
+            System.out.println("Address Book is empty.");
+            return;
+        }
+        System.out.println("Contacts sorted by city:");
+        contactList.stream()
+                .sorted(Comparator.comparing(Contact::getCity, String.CASE_INSENSITIVE_ORDER)
+                        .thenComparing(Contact::getFirstName, String.CASE_INSENSITIVE_ORDER)
+                        .thenComparing(Contact::getLastName, String.CASE_INSENSITIVE_ORDER))
+                .forEach(System.out::println);
+    }
+
+    public void sortContactsByState() {
+        if (contactList.isEmpty()) {
+            System.out.println("Address Book is empty.");
+            return;
+        }
+        System.out.println("Contacts sorted by state:");
+        contactList.stream()
+                .sorted(Comparator.comparing(Contact::getState, String.CASE_INSENSITIVE_ORDER)
+                        .thenComparing(Contact::getFirstName, String.CASE_INSENSITIVE_ORDER)
+                        .thenComparing(Contact::getLastName, String.CASE_INSENSITIVE_ORDER))
+                .forEach(System.out::println);
+    }
+
+    public void sortContactsByZip() {
+        if (contactList.isEmpty()) {
+            System.out.println("Address Book is empty.");
+            return;
+        }
+        System.out.println("Contacts sorted by zip:");
+        contactList.stream()
+                .sorted(Comparator.comparing(Contact::getZip, Comparator.nullsLast(String::compareTo))
+                        .thenComparing(Contact::getFirstName, String.CASE_INSENSITIVE_ORDER)
+                        .thenComparing(Contact::getLastName, String.CASE_INSENSITIVE_ORDER))
+                .forEach(System.out::println);
+    }
 }
 
 public class AddressBookSystem {
@@ -262,7 +302,7 @@ public class AddressBookSystem {
     private static void accessBookMenu(AddressBook book) {
         boolean back = false;
         while (!back) {
-            System.out.println("\n1. Add Contact\n2. Edit Contact\n3. Display Contacts\n4. Sort Contacts by Name\n5. Back to Main Menu");
+            System.out.println("\n1. Add Contact\n2. Edit Contact\n3. Display Contacts\n4. Sort Contacts by Name\n5. Sort Contacts by City\n6. Sort Contacts by State\n7. Sort Contacts by Zip\n8. Back to Main Menu");
             int choice = sc.nextInt(); sc.nextLine();
             switch (choice) {
                 case 1: book.addContact(); break;
@@ -272,7 +312,10 @@ public class AddressBookSystem {
                     break;
                 case 3: book.displayBook(); break;
                 case 4: book.sortContactsByName(); break;
-                case 5: back = true; break;
+                case 5: book.sortContactsByCity(); break;
+                case 6: book.sortContactsByState(); break;
+                case 7: book.sortContactsByZip(); break;
+                case 8: back = true; break;
             }
         }
     }
