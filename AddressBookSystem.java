@@ -1,14 +1,18 @@
 import java.io.*;
 import java.util.*;
 import java.util.stream.*;
+import java.lang.reflect.Type;
 import com.opencsv.CSVReader;
 import com.opencsv.CSVWriter;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.reflect.TypeToken;
 
 class Contact {
     private String firstName, lastName, address, city, state, zip, phoneNumber, email;
 
-    public Contact(String firstName, String lastName, String address, String city, 
-                   String state, String zip, String phoneNumber, String email) {
+    public Contact(String firstName, String lastName, String address, String city,
+            String state, String zip, String phoneNumber, String email) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.address = address;
@@ -19,25 +23,68 @@ class Contact {
         this.email = email;
     }
 
-    public String getFirstName() { return firstName; }
-    public String getLastName() { return lastName; }
-    public String getAddress() { return address; }
-    public String getCity() { return city; }
-    public String getState() { return state; }
-    public String getZip() { return zip; }
-    public String getPhoneNumber() { return phoneNumber; }
-    public String getEmail() { return email; }
-    public void setAddress(String address) { this.address = address; }
-    public void setCity(String city) { this.city = city; }
-    public void setState(String state) { this.state = state; }
-    public void setZip(String zip) { this.zip = zip; }
-    public void setPhoneNumber(String phoneNumber) { this.phoneNumber = phoneNumber; }
-    public void setEmail(String email) { this.email = email; }
+    public String getFirstName() {
+        return firstName;
+    }
+
+    public String getLastName() {
+        return lastName;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public String getCity() {
+        return city;
+    }
+
+    public String getState() {
+        return state;
+    }
+
+    public String getZip() {
+        return zip;
+    }
+
+    public String getPhoneNumber() {
+        return phoneNumber;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
+    public void setCity(String city) {
+        this.city = city;
+    }
+
+    public void setState(String state) {
+        this.state = state;
+    }
+
+    public void setZip(String zip) {
+        this.zip = zip;
+    }
+
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
+        if (this == obj)
+            return true;
+        if (obj == null || getClass() != obj.getClass())
+            return false;
         Contact other = (Contact) obj;
         return firstName.equalsIgnoreCase(other.firstName)
                 && lastName.equalsIgnoreCase(other.lastName);
@@ -62,14 +109,22 @@ class AddressBook {
 
     public void addContact() {
         System.out.println("\nEnter Details for New Contact:");
-        System.out.print("First Name: "); String fName = sc.nextLine();
-        System.out.print("Last Name: "); String lName = sc.nextLine();
-        System.out.print("Address: "); String addr = sc.nextLine();
-        System.out.print("City: "); String city = sc.nextLine();
-        System.out.print("State: "); String state = sc.nextLine();
-        System.out.print("Zip: "); String zip = sc.nextLine();
-        System.out.print("Phone: "); String phone = sc.nextLine();
-        System.out.print("Email: "); String email = sc.nextLine();
+        System.out.print("First Name: ");
+        String fName = sc.nextLine();
+        System.out.print("Last Name: ");
+        String lName = sc.nextLine();
+        System.out.print("Address: ");
+        String addr = sc.nextLine();
+        System.out.print("City: ");
+        String city = sc.nextLine();
+        System.out.print("State: ");
+        String state = sc.nextLine();
+        System.out.print("Zip: ");
+        String zip = sc.nextLine();
+        System.out.print("Phone: ");
+        String phone = sc.nextLine();
+        System.out.print("Email: ");
+        String email = sc.nextLine();
 
         Contact newContact = new Contact(fName, lName, addr, city, state, zip, phone, email);
         boolean duplicate = contactList.stream().anyMatch(contact -> contact.equals(newContact));
@@ -140,8 +195,10 @@ class AddressBook {
     }
 
     public void displayBook() {
-        if (contactList.isEmpty()) System.out.println("Address Book is empty.");
-        else contactList.forEach(System.out::println);
+        if (contactList.isEmpty())
+            System.out.println("Address Book is empty.");
+        else
+            contactList.forEach(System.out::println);
     }
 
     public void sortContactsByName() {
@@ -197,7 +254,7 @@ class AddressBook {
 
     public void writeToFile(String filePath) throws IOException {
         try (Writer writer = new FileWriter(filePath);
-             CSVWriter csvWriter = new CSVWriter(writer)) {
+                CSVWriter csvWriter = new CSVWriter(writer)) {
             for (Contact contact : contactList) {
                 String[] data = {
                         contact.getFirstName(),
@@ -216,12 +273,13 @@ class AddressBook {
 
     public void readFromFile(String filePath) throws IOException {
         try (Reader reader = new FileReader(filePath);
-             CSVReader csvReader = new CSVReader(reader)) {
+                CSVReader csvReader = new CSVReader(reader)) {
             String[] nextRecord;
             try {
                 while ((nextRecord = csvReader.readNext()) != null) {
                     if (nextRecord.length == 8) {
-                        Contact contact = new Contact(nextRecord[0], nextRecord[1], nextRecord[2], nextRecord[3], nextRecord[4], nextRecord[5], nextRecord[6], nextRecord[7]);
+                        Contact contact = new Contact(nextRecord[0], nextRecord[1], nextRecord[2], nextRecord[3],
+                                nextRecord[4], nextRecord[5], nextRecord[6], nextRecord[7]);
                         if (!contactList.contains(contact)) {
                             contactList.add(contact);
                         }
@@ -230,6 +288,32 @@ class AddressBook {
             } catch (Exception e) {
                 System.out.println("Error parsing CSV: " + e.getMessage());
             }
+        }
+        rebuildDictionaries();
+    }
+
+    public void writeToJsonFile(String filePath) throws IOException {
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        try (Writer writer = new FileWriter(filePath)) {
+            gson.toJson(contactList, writer);
+        }
+    }
+
+    public void readFromJsonFile(String filePath) throws IOException {
+        Gson gson = new Gson();
+        try (Reader reader = new FileReader(filePath)) {
+            Type listType = new TypeToken<ArrayList<Contact>>() {
+            }.getType();
+            ArrayList<Contact> contacts = gson.fromJson(reader, listType);
+            if (contacts != null) {
+                for (Contact contact : contacts) {
+                    if (!contactList.contains(contact)) {
+                        contactList.add(contact);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Error parsing JSON: " + e.getMessage());
         }
         rebuildDictionaries();
     }
@@ -259,10 +343,11 @@ public class AddressBookSystem {
             System.out.println("3. Display All Address Books");
             System.out.println("4. Search Persons by City or State");
             System.out.println("5. Count Persons by City or State");
-            System.out.println("6. Save Address Book to File");
-            System.out.println("7. Load Address Book from File");
+            System.out.println("6. Save Address Book to CSV/JSON File");
+            System.out.println("7. Load Address Book from CSV/JSON File");
             System.out.println("8. Exit");
-            int choice = sc.nextInt(); sc.nextLine();
+            int choice = sc.nextInt();
+            sc.nextLine();
 
             switch (choice) {
                 case 1:
@@ -286,8 +371,10 @@ public class AddressBookSystem {
                     }
                     break;
                 case 3:
-                    if (addressBookMap.isEmpty()) System.out.println("No Address Books available.");
-                    else addressBookMap.keySet().forEach(key -> System.out.println("- " + key));
+                    if (addressBookMap.isEmpty())
+                        System.out.println("No Address Books available.");
+                    else
+                        addressBookMap.keySet().forEach(key -> System.out.println("- " + key));
                     break;
                 case 4:
                     searchPersonAcrossBooks();
@@ -316,10 +403,14 @@ public class AddressBookSystem {
             System.out.println("Address Book not found.");
             return;
         }
-        System.out.print("Enter file name to save to (for example, " + bookName + ".txt): ");
+        System.out.print("Enter file name to save to (e.g. " + bookName + ".csv or " + bookName + ".json): ");
         String filePath = sc.nextLine();
         try {
-            book.writeToFile(filePath);
+            if (filePath.toLowerCase().endsWith(".json")) {
+                book.writeToJsonFile(filePath);
+            } else {
+                book.writeToFile(filePath);
+            }
             System.out.println("Address Book saved to " + filePath + " successfully.");
         } catch (IOException e) {
             System.out.println("Error writing to file: " + e.getMessage());
@@ -329,11 +420,15 @@ public class AddressBookSystem {
     private static void loadBookFromFile() {
         System.out.print("Enter the name of the Address Book to load into: ");
         String bookName = sc.nextLine();
-        System.out.print("Enter file path to load from: ");
+        System.out.print("Enter file path to load from (e.g. .csv or .json): ");
         String filePath = sc.nextLine();
         AddressBook book = addressBookMap.computeIfAbsent(bookName, key -> new AddressBook());
         try {
-            book.readFromFile(filePath);
+            if (filePath.toLowerCase().endsWith(".json")) {
+                book.readFromJsonFile(filePath);
+            } else {
+                book.readFromFile(filePath);
+            }
             System.out.println("Address Book loaded from " + filePath + " into '" + bookName + "'.");
         } catch (IOException e) {
             System.out.println("Error reading from file: " + e.getMessage());
@@ -344,7 +439,8 @@ public class AddressBookSystem {
         System.out.println("\nSearch by:");
         System.out.println("1. City");
         System.out.println("2. State");
-        int choice = sc.nextInt(); sc.nextLine();
+        int choice = sc.nextInt();
+        sc.nextLine();
         System.out.print("Enter search value: ");
         String searchValue = sc.nextLine();
 
@@ -374,7 +470,8 @@ public class AddressBookSystem {
         System.out.println("\nCount by:");
         System.out.println("1. City");
         System.out.println("2. State");
-        int choice = sc.nextInt(); sc.nextLine();
+        int choice = sc.nextInt();
+        sc.nextLine();
         System.out.print("Enter value: ");
         String value = sc.nextLine();
 
@@ -396,20 +493,36 @@ public class AddressBookSystem {
     private static void accessBookMenu(AddressBook book) {
         boolean back = false;
         while (!back) {
-            System.out.println("\n1. Add Contact\n2. Edit Contact\n3. Display Contacts\n4. Sort Contacts by Name\n5. Sort Contacts by City\n6. Sort Contacts by State\n7. Sort Contacts by Zip\n8. Back to Main Menu");
-            int choice = sc.nextInt(); sc.nextLine();
+            System.out.println(
+                    "\n1. Add Contact\n2. Edit Contact\n3. Display Contacts\n4. Sort Contacts by Name\n5. Sort Contacts by City\n6. Sort Contacts by State\n7. Sort Contacts by Zip\n8. Back to Main Menu");
+            int choice = sc.nextInt();
+            sc.nextLine();
             switch (choice) {
-                case 1: book.addContact(); break;
+                case 1:
+                    book.addContact();
+                    break;
                 case 2:
                     System.out.print("Enter First Name to edit: ");
                     book.editContact(sc.nextLine());
                     break;
-                case 3: book.displayBook(); break;
-                case 4: book.sortContactsByName(); break;
-                case 5: book.sortContactsByCity(); break;
-                case 6: book.sortContactsByState(); break;
-                case 7: book.sortContactsByZip(); break;
-                case 8: back = true; break;
+                case 3:
+                    book.displayBook();
+                    break;
+                case 4:
+                    book.sortContactsByName();
+                    break;
+                case 5:
+                    book.sortContactsByCity();
+                    break;
+                case 6:
+                    book.sortContactsByState();
+                    break;
+                case 7:
+                    book.sortContactsByZip();
+                    break;
+                case 8:
+                    back = true;
+                    break;
             }
         }
     }
