@@ -1,3 +1,4 @@
+import java.io.*;
 import java.util.*;
 import java.util.stream.*;
 
@@ -45,6 +46,26 @@ class Contact {
     @Override
     public String toString() {
         return "Name: " + firstName + " " + lastName + " | City: " + city + " | Phone: " + phoneNumber;
+    }
+
+    public String toCSV() {
+        return String.join(",",
+                firstName,
+                lastName,
+                address,
+                city,
+                state,
+                zip,
+                phoneNumber,
+                email);
+    }
+
+    public static Contact fromCSV(String csvLine) {
+        String[] parts = csvLine.split(",", -1);
+        if (parts.length != 8) {
+            return null;
+        }
+        return new Contact(parts[0], parts[1], parts[2], parts[3], parts[4], parts[5], parts[6], parts[7]);
     }
 }
 
@@ -188,6 +209,40 @@ class AddressBook {
                         .thenComparing(Contact::getLastName, String.CASE_INSENSITIVE_ORDER))
                 .forEach(System.out::println);
     }
+
+    public void writeToFile(String filePath) throws IOException {
+        try (PrintWriter writer = new PrintWriter(new BufferedWriter(new FileWriter(filePath)))) {
+            for (Contact contact : contactList) {
+                writer.println(contact.toCSV());
+            }
+        }
+    }
+
+    public void readFromFile(String filePath) throws IOException {
+        try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                line = line.trim();
+                if (line.isEmpty()) {
+                    continue;
+                }
+                Contact contact = Contact.fromCSV(line);
+                if (contact != null && !contactList.contains(contact)) {
+                    contactList.add(contact);
+                }
+            }
+        }
+        rebuildDictionaries();
+    }
+
+    private void rebuildDictionaries() {
+        cityPersonMap.clear();
+        statePersonMap.clear();
+        for (Contact contact : contactList) {
+            addToCityDictionary(contact.getCity(), contact);
+            addToStateDictionary(contact.getState(), contact);
+        }
+    }
 }
 
 public class AddressBookSystem {
@@ -205,7 +260,9 @@ public class AddressBookSystem {
             System.out.println("3. Display All Address Books");
             System.out.println("4. Search Persons by City or State");
             System.out.println("5. Count Persons by City or State");
-            System.out.println("6. Exit");
+            System.out.println("6. Save Address Book to File");
+            System.out.println("7. Load Address Book from File");
+            System.out.println("8. Exit");
             int choice = sc.nextInt(); sc.nextLine();
 
             switch (choice) {
@@ -240,9 +297,47 @@ public class AddressBookSystem {
                     countPersonsAcrossBooks();
                     break;
                 case 6:
+                    saveBookToFile();
+                    break;
+                case 7:
+                    loadBookFromFile();
+                    break;
+                case 8:
                     exit = true;
                     break;
             }
+        }
+    }
+
+    private static void saveBookToFile() {
+        System.out.print("Enter the name of the Address Book to save: ");
+        String bookName = sc.nextLine();
+        AddressBook book = addressBookMap.get(bookName);
+        if (book == null) {
+            System.out.println("Address Book not found.");
+            return;
+        }
+        System.out.print("Enter file name to save to (for example, " + bookName + ".txt): ");
+        String filePath = sc.nextLine();
+        try {
+            book.writeToFile(filePath);
+            System.out.println("Address Book saved to " + filePath + " successfully.");
+        } catch (IOException e) {
+            System.out.println("Error writing to file: " + e.getMessage());
+        }
+    }
+
+    private static void loadBookFromFile() {
+        System.out.print("Enter the name of the Address Book to load into: ");
+        String bookName = sc.nextLine();
+        System.out.print("Enter file path to load from: ");
+        String filePath = sc.nextLine();
+        AddressBook book = addressBookMap.computeIfAbsent(bookName, key -> new AddressBook());
+        try {
+            book.readFromFile(filePath);
+            System.out.println("Address Book loaded from " + filePath + " into '" + bookName + "'.");
+        } catch (IOException e) {
+            System.out.println("Error reading from file: " + e.getMessage());
         }
     }
 
