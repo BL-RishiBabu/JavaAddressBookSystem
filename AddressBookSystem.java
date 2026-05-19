@@ -1,6 +1,8 @@
 import java.io.*;
 import java.util.*;
 import java.util.stream.*;
+import com.opencsv.CSVReader;
+import com.opencsv.CSVWriter;
 
 class Contact {
     private String firstName, lastName, address, city, state, zip, phoneNumber, email;
@@ -19,9 +21,12 @@ class Contact {
 
     public String getFirstName() { return firstName; }
     public String getLastName() { return lastName; }
+    public String getAddress() { return address; }
     public String getCity() { return city; }
     public String getState() { return state; }
     public String getZip() { return zip; }
+    public String getPhoneNumber() { return phoneNumber; }
+    public String getEmail() { return email; }
     public void setAddress(String address) { this.address = address; }
     public void setCity(String city) { this.city = city; }
     public void setState(String state) { this.state = state; }
@@ -46,26 +51,6 @@ class Contact {
     @Override
     public String toString() {
         return "Name: " + firstName + " " + lastName + " | City: " + city + " | Phone: " + phoneNumber;
-    }
-
-    public String toCSV() {
-        return String.join(",",
-                firstName,
-                lastName,
-                address,
-                city,
-                state,
-                zip,
-                phoneNumber,
-                email);
-    }
-
-    public static Contact fromCSV(String csvLine) {
-        String[] parts = csvLine.split(",", -1);
-        if (parts.length != 8) {
-            return null;
-        }
-        return new Contact(parts[0], parts[1], parts[2], parts[3], parts[4], parts[5], parts[6], parts[7]);
     }
 }
 
@@ -211,25 +196,39 @@ class AddressBook {
     }
 
     public void writeToFile(String filePath) throws IOException {
-        try (PrintWriter writer = new PrintWriter(new BufferedWriter(new FileWriter(filePath)))) {
+        try (Writer writer = new FileWriter(filePath);
+             CSVWriter csvWriter = new CSVWriter(writer)) {
             for (Contact contact : contactList) {
-                writer.println(contact.toCSV());
+                String[] data = {
+                        contact.getFirstName(),
+                        contact.getLastName(),
+                        contact.getAddress(),
+                        contact.getCity(),
+                        contact.getState(),
+                        contact.getZip(),
+                        contact.getPhoneNumber(),
+                        contact.getEmail()
+                };
+                csvWriter.writeNext(data);
             }
         }
     }
 
     public void readFromFile(String filePath) throws IOException {
-        try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                line = line.trim();
-                if (line.isEmpty()) {
-                    continue;
+        try (Reader reader = new FileReader(filePath);
+             CSVReader csvReader = new CSVReader(reader)) {
+            String[] nextRecord;
+            try {
+                while ((nextRecord = csvReader.readNext()) != null) {
+                    if (nextRecord.length == 8) {
+                        Contact contact = new Contact(nextRecord[0], nextRecord[1], nextRecord[2], nextRecord[3], nextRecord[4], nextRecord[5], nextRecord[6], nextRecord[7]);
+                        if (!contactList.contains(contact)) {
+                            contactList.add(contact);
+                        }
+                    }
                 }
-                Contact contact = Contact.fromCSV(line);
-                if (contact != null && !contactList.contains(contact)) {
-                    contactList.add(contact);
-                }
+            } catch (Exception e) {
+                System.out.println("Error parsing CSV: " + e.getMessage());
             }
         }
         rebuildDictionaries();
